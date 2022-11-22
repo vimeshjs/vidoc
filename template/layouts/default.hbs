@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <title>{{page.title}} - {{site.title}}</title>
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <script src="https://unpkg.com/@vimesh/style" defer></script>
+    <script src="https://unpkg.com/@vimesh/ui"></script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+    {{{block 'styles'}}}
+    {{{block 'scripts@head'}}}
+</head>
+
+<body x-cloak>
+    {{{body}}}
+    {{{block 'scripts'}}}
+</body>
+
+</html>
