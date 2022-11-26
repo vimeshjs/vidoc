@@ -8,15 +8,16 @@
   "author": "jacky <xinjie.zhang@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "watch": "node index.js watch",
+    "dev": "node index.js watch mnt/vimesh-style"
   },
   "dependencies": {
-    "@vimesh/cache": "^0.11.15",
-    "@vimesh/logger": "^0.11.15",
     "@vimesh/style": "^0.14.0",
     "@vimesh/ui": "^0.5.1",
     "alpinejs": "^3.10.5",
     "bluebird": "^3.7.2",
+    "chokidar": "^3.5.3",
     "fs-extra": "^10.1.0",
     "glob": "^8.0.3",
     "handlebars": "^4.7.7",

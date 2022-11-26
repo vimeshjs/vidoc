@@ -23,7 +23,7 @@ function appendContentToBlock(name, options, content) {
 
 export function contentFor(name, options) {
     if (!name) {
-        $logger.error('Block name must be provided in contentFor helper!')
+        console.error('Block name must be provided in contentFor helper!')
         return
     }
     let content = options.fn(this)

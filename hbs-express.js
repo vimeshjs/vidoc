@@ -24,7 +24,6 @@ function renderWithLayout(context) {
     let layoutName = extractLayout(context.view) || context.layout
     let options = { partials: context.partials, helpers: context.helpers }
     let body = context.view.template(context.locals, options)
-    //$logger.debug(`Render @${context.view.path} ${layoutName ? 'with layout ' + layoutName : ''}`)
     if (layoutName) {
         let layoutView = context.layouts[layoutName]
         if (layoutView) {
@@ -33,7 +32,7 @@ function renderWithLayout(context) {
             context.layout = null
             return renderWithLayout(context)
         } else {
-            $logger.error(`Could not found layout "${layoutName}"`)
+            console.error(`Could not found layout "${layoutName}"`)
         }
     }
     return Promise.resolve(body)
@@ -66,7 +65,7 @@ HbsViewEngine.prototype.render = function (source, context, callback) {
                     }
                 }
                 ).catch(ex =>
-                    $logger.error(ex)
+                    console.error(ex)
                 )
             else {
                 let r = result
