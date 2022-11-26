@@ -1,16 +1,14 @@
 import _ from 'lodash'
-import fs from 'fs'
+import fs from 'fs-extra'
 import path from 'path'
 import glob from 'glob'
-import Promise from 'bluebird'
 import handlebars from 'handlebars'
-import rimraf from 'rimraf'
-import mkdirp from 'mkdirp'
 import { setupLogger } from '@vimesh/logger'
 import { convertMarkdownToHtml } from './markdown.js'
 import { createMemoryCache } from '@vimesh/cache'
 import { createHbsViewEngine } from './hbs-express.js'
-const readFileAsync = Promise.promisify(fs.readFile)
+
+const X_COMP = /x-component\s*=\s*['\"](?<component>[^'\"]*)['\"]/g
 
 function createLocalTemplateCache(dir) {
     const extName = '.hbs'
@@ -25,16 +23,19 @@ function createLocalTemplateCache(dir) {
         },
         onRefresh: async (key) => {
             let fn = `${dir}/${key}${extName}`
-            let source = (await readFileAsync(fn)).toString()
+            let source = fs.readFileSync(fn).toString()
             let template = handlebars.compile(source)
             return { source, template }
         }
     })
 }
 
-async function build(sourceDir, targetDir) {
+async function build(sourceDir, targetDir, tplDir) {
+    const compDir = path.join(tplDir, 'components')
+    await fs.emptyDir(targetDir)
+    await fs.copy(path.join(tplDir, 'assets'), path.join(targetDir, 'assets'))
+    await fs.copy(compDir, path.join(targetDir, 'components'))
 
-    let tplDir = path.join(process.cwd(), 'template')
     let layoutsDir = path.join(tplDir, 'layouts')
     let partialsDir = path.join(tplDir, 'partials')
     let debug = true
@@ -46,6 +47,19 @@ async function build(sourceDir, targetDir) {
     }
 
     const render = await createHbsViewEngine(config)
+    const compToFile = {}
+    const compFileContents = {}
+    const compFiles = glob.sync(`${compDir}/**/*.html`)
+    for (let i = 0; i < compFiles.length; i++) {
+        let fcomp = compFiles[i]
+        let def = fs.readFileSync(fcomp)
+        compFileContents[fcomp] = def
+        let match
+        while ((match = X_COMP.exec(def)) !== null) {
+            let compName = _.trim(match.groups.component)
+            compToFile[compName] = fcomp
+        }
+    }
 
     const inputs = glob.sync(`${sourceDir}/**/*.md`)
     for (let i = 0; i < inputs.length; i++) {
@@ -57,11 +71,12 @@ async function build(sourceDir, targetDir) {
         let fout = path.join(targetDir, fRelOut)
         console.log(`Processing ${fRelIn} -> ${fout}, ${fn}`)
         let content = fs.readFileSync(fin).toString()
-        let result = await convertMarkdownToHtml(content)
-
-        render(result, {}, (err, html) => {
+        let result = await convertMarkdownToHtml(content, compToFile)
+        let compsImportContent = _.map(result.imports, f => compFileContents[f]).join('\n')
+        render(result.html, { page: result.page, imports: compsImportContent }, (err, html) => {
             if (err) console.log(err)
             //console.log(html)
+            fs.ensureFileSync(fout)
             fs.writeFileSync(fout, html)
         })
     }
@@ -70,7 +85,6 @@ async function build(sourceDir, targetDir) {
 const root = process.cwd()
 const targetDir = path.join(root, '.vidoc')
 const sourceDir = path.join(root, 'mnt/vimesh-style')
+const tplDir = path.join(process.cwd(), 'template')
 setupLogger({ console: {} })
-rimraf.sync(targetDir)
-mkdirp.sync(targetDir)
-build(sourceDir, targetDir)
+build(sourceDir, targetDir, tplDir)

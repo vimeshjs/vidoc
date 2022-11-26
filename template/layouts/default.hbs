@@ -7,24 +7,44 @@
 
     <title>{{page.title}} - {{site.title}}</title>
 
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/assets/favicon.ico" type="image/x-icon">
 
-    <script src="https://unpkg.com/@vimesh/style" defer></script>
-    <script src="https://unpkg.com/@vimesh/ui"></script>
-    <script src="https://unpkg.com/alpinejs" defer></script>
+    <link media="all" rel="stylesheet" href="/assets/highlight.css" />
+    
+    <script src="/assets/vs@1.0.0.js"></script>
+    <script src="/assets/vui@0.5.1.js"></script>
+    <script src="/assets/alphine@3.10.5.js" defer></script>
 
     <style>
         [x-cloak] {
             display: none !important;
         }
     </style>
+
+    <script>
+        $vs.addMacroCss([{
+            'h1': 'text-4xl',
+            'h2': 'text-3xl',
+            'h3': 'text-2xl',
+            'h4': 'text-xl',
+            'h5': 'text-lg',
+            'h6': 'text-base',
+            'a' : 'text-blue-500',
+            'a:hover' : 'underline'
+        }])
+        //$vui.config.debug =true
+        $vui.config.importMap = {
+            "*": './components/${component}.html'
+        }
+    </script>
     {{{block 'styles'}}}
     {{{block 'scripts@head'}}}
 </head>
 
-<body x-cloak>
+<body x-data x-cloak>
     {{{body}}}
     {{{block 'scripts'}}}
+    {{{imports}}}
 </body>
 
 </html>
